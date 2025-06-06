@@ -1,24 +1,23 @@
-[project]
+[tool.poetry]
 name = "polyword"
 version = "0.1.0"
-description = "human friendly translations"
-authors = [
-    {name = "haxdds",email = "rahulchowdh97@gmail.com"}
-]
+description = "A tool for processing PDFs with OCR, translation, and refinement"
+authors = ["Your Name <your.email@example.com>"]
 readme = "README.md"
-requires-python = ">=3.8,<3.13"
-dependencies = [
-    "google-cloud-vision>=3.0.0",
-    "google-cloud-storage>=2.0.0",
-    "google-cloud-translate>=3.0.0",
-    "openai>=1.0.0",
-    "fastapi>=0.68.0",
-    "uvicorn>=0.15.0",
-    "python-multipart>=0.0.5",
-    "pyinstaller>=6.3.0",
-    "markdown-pdf>=1.7"
-]
+packages = [{include = "polyword"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.13"
+fastapi = "^0.110.0"
+uvicorn = "^0.27.1"
+python-multipart = "^0.0.9"
+google-cloud-storage = "^2.14.0"
+google-cloud-vision = "^3.5.0"
+google-cloud-translate = "^3.12.0"
+openai = "^1.12.0"
+markdown-pdf = "^0.0.8"
+pymupdf = "^1.23.26"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

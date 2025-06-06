@@ -3,7 +3,7 @@
 block_cipher = None
 
 a = Analysis(
-    ['polyword/desktop_app.py'],
+    ['polyword/windows_launcher.py'],
     pathex=[],
     binaries=[],
     datas=[
@@ -17,6 +17,11 @@ a = Analysis(
         'uvicorn.protocols.websockets.auto',
         'uvicorn.lifespan',
         'uvicorn.lifespan.on',
+        'google.cloud.storage',
+        'google.cloud.vision',
+        'google.cloud.translate',
+        'markdown_pdf',
+        'pymupdf',
     ],
     hookspath=[],
     hooksconfig={},
@@ -44,7 +49,7 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
