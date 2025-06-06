@@ -1,0 +1,34 @@
+.result-item {
+    @apply flex items-center justify-between p-4 bg-gray-50 rounded-lg;
+}
+
+.download-btn {
+    @apply px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors;
+}
+
+/* Drag and drop styles */
+.border-dashed {
+    transition: all 0.3s ease;
+}
+
+.border-dashed:hover {
+    border-color: #4B5563;
+    background-color: #F9FAFB;
+}
+
+/* File input drag and drop */
+.drag-over {
+    border-color: #2563EB;
+    background-color: #EFF6FF;
+}
+
+/* Processing animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+} 

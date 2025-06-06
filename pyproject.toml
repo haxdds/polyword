@@ -1,0 +1,24 @@
+[project]
+name = "polyword"
+version = "0.1.0"
+description = "human friendly translations"
+authors = [
+    {name = "haxdds",email = "rahulchowdh97@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.8,<3.13"
+dependencies = [
+    "google-cloud-vision>=3.0.0",
+    "google-cloud-storage>=2.0.0",
+    "google-cloud-translate>=3.0.0",
+    "openai>=1.0.0",
+    "fastapi>=0.68.0",
+    "uvicorn>=0.15.0",
+    "python-multipart>=0.0.5",
+    "pyinstaller>=6.3.0",
+    "markdown-pdf>=1.7"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
