@@ -11,6 +11,9 @@ from polyword.services.storage import StorageService
 from polyword.services.chatgpt import ChatGPTService
 from polyword.processor import PDFProcessor
 
+from dotenv import load_dotenv
+load_dotenv()
+
 def resource_path(relative_path):
     """Get absolute path to resource, works for dev and for PyInstaller"""
     try:
