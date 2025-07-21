@@ -10,6 +10,7 @@ from polyword.services.translate import TranslationService
 from polyword.services.storage import StorageService
 from polyword.services.chatgpt import ChatGPTService
 from polyword.processor import PDFProcessor
+from polyword.services.claude import ClaudeService
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -44,11 +45,13 @@ class PolyWordApp:
         self.translation_service = TranslationService()
         self.storage_service = StorageService()
         self.chatgpt_service = ChatGPTService()
+        self.claude_service = ClaudeService()
         self.processor = PDFProcessor(
             self.ocr_service,
             self.translation_service,
             self.storage_service,
-            self.chatgpt_service
+            self.chatgpt_service,
+            self.claude_service
         )
         
         # Initialize variables
@@ -152,9 +155,36 @@ class PolyWordApp:
         
         # Add new results
         for key, uri in self.processing_results.items():
-            file_type = key.replace('_uri', '').replace('_', ' ').title()
-            if 'pdf' in key.lower():
+            # Extract filename from URI to get more descriptive file type
+            filename = uri.split('/')[-1]
+            
+            # Create user-friendly file type description
+            if 'original_text' in filename:
+                file_type = "Original Text"
+            elif 'translated_text' in filename:
+                # Extract language from filename
+                parts = filename.split('_')
+                if len(parts) >= 4:  # translated_text_{lang}_{timestamp}.txt
+                    lang = parts[2]
+                    file_type = f"Translated Text ({lang.upper()})"
+                else:
+                    file_type = "Translated Text"
+            elif 'split_text' in filename:
+                # Extract language from filename
+                parts = filename.split('_')
+                if len(parts) >= 4:  # split_text_{lang}_{timestamp}.txt
+                    lang = parts[2]
+                    file_type = f"Split Text ({lang.upper()})"
+                else:
+                    file_type = "Split Text"
+            elif 'refined_text' in filename:
+                file_type = "Refined Text"
+            elif 'refined_pdf' in filename or filename.endswith('.pdf'):
                 file_type = "PDF Document"
+            else:
+                # Fallback to key-based naming
+                file_type = key.replace('_uri', '').replace('_', ' ').title()
+            
             self.results_list.insert("", tk.END, values=(file_type, "Ready"), tags=(uri,))
         
         self.download_btn.config(state=tk.NORMAL)
