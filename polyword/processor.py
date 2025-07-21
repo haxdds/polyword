@@ -3,6 +3,7 @@ from polyword.services.translate import TranslationService
 from polyword.services.storage import StorageService
 from polyword.services.chatgpt import ChatGPTService
 from markdown_pdf import MarkdownPdf, Section
+from polyword.services.claude import ClaudeService
 import tempfile
 import os
 
@@ -12,12 +13,14 @@ class PDFProcessor:
         ocr_service: OCRService,
         translation_service: TranslationService,
         storage_service: StorageService,
-        chatgpt_service: ChatGPTService
+        chatgpt_service: ChatGPTService,
+        claude_service: ClaudeService
     ):
         self.ocr = ocr_service
         self.translator = translation_service
         self.storage = storage_service
         self.chatgpt = chatgpt_service
+        self.claude = claude_service
 
     def process_pdf(
         self,
@@ -34,9 +37,13 @@ class PDFProcessor:
         extracted_text = self.ocr.extract_text_from_results(
             self.storage, output_bucket, output_prefix
         )
+
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        
         original_uri = self.storage.save_text(
             output_bucket,
-            f"{output_prefix}/original_text.txt",
+            f"{output_prefix}/original_text_{timestamp}.txt",
             extracted_text
         )
 
@@ -46,57 +53,67 @@ class PDFProcessor:
         )
         translated_uri = self.storage.save_text(
             output_bucket,
-            f"{output_prefix}/translated_text_{target_language}.txt",
+            f"{output_prefix}/translated_text_{target_language}_{timestamp}.txt",
             translated_text
         )
 
-        # Step 4: Refine
-        refined_text = self.chatgpt.refine_text(translated_text)
-        refined_uri = self.storage.save_text(
+        # split_text = self.chatgpt.split_paragraphs_20k(translated_text)
+        split_text = self.claude.stream_split_paragraphs_20k(translated_text)
+        
+        split_uri = self.storage.save_text(
             output_bucket,
-            f"{output_prefix}/refined_text_{target_language}.txt",
-            refined_text
+            f"{output_prefix}/split_text_{target_language}_{timestamp}.txt",
+            split_text
         )
 
-        # Step 5: Convert refined text to PDF
-        pdf_uri = self._convert_to_pdf(
-            refined_text,
-            output_bucket,
-            f"{output_prefix}/refined_text_{target_language}.pdf"
-        )
+        # # Step 4: Refine
+        # refined_text = self.chatgpt.refine_text(translated_text)
+        # refined_uri = self.storage.save_text(
+        #     output_bucket,
+        #     f"{output_prefix}/refined_text_{target_language}.txt",
+        #     refined_text
+        # )
+
+        # # Step 5: Convert refined text to PDF
+        # pdf_uri = self._convert_to_pdf(
+        #     refined_text,
+        #     output_bucket,
+        #     f"{output_prefix}/refined_text_{target_language}.pdf"
+        # )
 
         return {
             'original_text_uri': original_uri,
             'translated_text_uri': translated_uri,
-            'refined_text_uri': refined_uri,
-            'refined_pdf_uri': pdf_uri
+            'split_text_uri': split_uri,
+            # 'refined_text_uri': refined_uri,
+            # 'refined_pdf_uri': pdf_uri
         }
 
-    def _convert_to_pdf(self, markdown_text: str, bucket_name: str, dest_blob_name: str) -> str:
-        """Convert markdown text to PDF and upload to GCS."""
-        # Create a temporary file for the PDF
-        with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp_pdf:
-            # Initialize PDF converter
-            pdf = MarkdownPdf(toc_level=2, optimize=True)
+    # def _convert_to_pdf(self, markdown_text: str, bucket_name: str, dest_blob_name: str) -> str:
+    #     """Convert markdown text to PDF and upload to GCS."""
+    #     # Create a temporary file for the PDF
+    #     with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as temp_pdf:
+    #         # Initialize PDF converter
+    #         pdf = MarkdownPdf(toc_level=2, optimize=True)
             
-            # Add metadata
-            pdf.meta["title"] = "Refined Document"
-            pdf.meta["author"] = "PolyWord"
+    #         # Add metadata
+    #         pdf.meta["title"] = "Refined Document"
+    #         pdf.meta["author"] = "PolyWord"
             
-            # Add the markdown content as a section
-            pdf.add_section(Section(markdown_text))
+    #         # Add the markdown content as a section
+    #         pdf.add_section(Section(markdown_text))
             
-            # Save to temporary file
-            pdf.save(temp_pdf.name)
+    #         # Save to temporary file
+    #         pdf.save(temp_pdf.name)
             
-            # Upload to GCS
-            gcs_uri = self.storage.upload_pdf_to_gcs(
-                temp_pdf.name,
-                bucket_name,
-                dest_blob_name
-            )
+    #         # Upload to GCS
+    #         gcs_uri = self.storage.upload_pdf_to_gcs(
+    #             temp_pdf.name,
+    #             bucket_name,
+    #             dest_blob_name
+    #         )
             
-            # Clean up temporary file
-            os.unlink(temp_pdf.name)
+    #         # Clean up temporary file
+    #         os.unlink(temp_pdf.name)
             
-            return gcs_uri
+    #         return gcs_uri
